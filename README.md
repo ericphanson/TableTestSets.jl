@@ -10,6 +10,8 @@ Testsets which can be printed to HTML tables. Provides
 * a function `html_table(io, ts::TableTestSet)` which uses `PrettyTables.jl` to print an HTML table formatted similarly to the usual test printing style
 * and functions `TableTestSets.print_test_results(io::IO, ts::TableTestSet)` and `TableTestSets.print_test_errors(io::IO, ts::TableTestSet)` to print results or errors to an IO object.
 
+Relies on a few internal functions from the Test standard library, so this code could potentially break in future minor releases of Julia (tested on 1.3).
+
 ## Example
 
 ```julia
