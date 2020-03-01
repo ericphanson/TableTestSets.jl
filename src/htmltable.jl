@@ -1,71 +1,91 @@
-function html_table(io::IO, ts::TableTestSet; standalone = true)
-    tab = Tables.columntable(ts)
+function write_html_table(io::IO, tab; header = Tables.columnnames(first(Tables.rows(tab))), style = (value, i, j) -> "", format = (value, i, j) -> value, include_columns = 1:length(header), standalone = false, css = """
+    table, td, th {
+        border-collapse: collapse;
+        font-family: sans-serif;
+    }
+    td, th {
+        border-bottom: 0;
+        background: #fff !important;
+        padding: 6px
+    }
+    tr.header {
+        background: #fff !important;
+        font-weight: bold;
+    }
+    """)
+    rows = Tables.rows(tab)
+    if standalone
+        println(io,"""
+        <!DOCTYPE html>
+        <html>
+        <meta charset="UTF-8">
+        <style>
+        $css
+        </style>
+        <body>
+        """)
+    end
+    println(io, "<table>")
+    println(io, """<tr class="header">""")
+    for (j, h) in enumerate(header)
+        j ∈ include_columns || continue
+        println(io, """
+        <td style="$(style(h,0,j))">$(format(h, 0, j))</td>""")
+    end
+    println(io, "</tr>")
+    for (i, row) in enumerate(rows)
+        print(io, """<tr>""")
+        for (j, h) in enumerate(row)
+            j ∈ include_columns || continue
+            println(io, """
+                <td style="$(style(h,i,j))">$(format(h, i, j))</td>""")
+        end
+        print(io, "</tr>")
+    end
+    println(io, "</table>")
+    if standalone
+        println(io, """
+        </body>
+        </html>
+        """)
+    end
+end
 
-    hl_red = HTMLHighlighter(
-        (data, i, j) -> (j ∈ (3, 4)) && data[i, j] > 0,
-        HTMLDecoration(color = "red"),
-    )
-    hl_green = HTMLHighlighter(
-        (data, i, j) -> (j == 2) && data[i, j] > 0,
-        HTMLDecoration(color = "green"),
-    )
-    hl_blue = HTMLHighlighter(
-        (data, i, j) -> (j == 5) && data[i, j] > 0,
-        HTMLDecoration(color = "blue"),
-    )
-    CA = Dict(
-        (i, j) => j == 1 ? :l : :c for i = 1:Tables.rowcount(tab) for j = 1:length(tab)
-    )
+function html_table(io::IO, ts::TableTestSet; kwargs...)
+    tab = Tables.rowtable(ts)
+    style = function(value, i, j)
+        str = ""
 
-    depth_formatter =
-        Dict{Number,Function}(1 => (value, row) -> repeat("&nbsp;", tab[7][row]) * value)
-    tf = HTMLTableFormat(css = """
-                         table, td, th {
-                             border-collapse: collapse;
-                             font-family: sans-serif;
-                         }
+        if j == 1
+            str *= "text-align:left;"
+            str *= "border-right: solid 2px;"
+        else
+            str *= "text-align:center;"
+        end
 
-                         tr.headerLastRow th:first-child {
-                             text-align:left !important;
-                             border-right: solid 2px;
-                         }
+        # if it's the header, stop here
+        if i == 0
+            return str
+        end
 
-                         tr td:first-child {
-                             border-right: solid 2px;
-                         }
-                         td, th {
-                             border-bottom: 0;
-                             background: #fff !important;
-                             padding: 6px
-                         }
-                         tr.header {
-                             background: #fff !important;
-                             font-weight: bold;
-                         }
-                         tr.subheader {
-                             background: #fff !important;
-                             color: dimgray;
-                         }
-                         tr.headerLastRow {
-                             border-bottom: 2px solid black;
-                         }
-                         th.rowNumber, td.rowNumber {
-                             text-align: right;
-                         }
-                         """)
-    buffer = IOBuffer()
-    pretty_table(
-        buffer,
-        tab;
-        formatter = depth_formatter,
-        filters_col = ((data, i) -> i <= 6,),
-        backend = :html,
-        nosubheader = true,
-        highlighters = (hl_red, hl_green, hl_blue),
-        cell_alignment = CA,
-        tf = tf,
-        standalone = standalone,
-    )
-    write(io, take!(buffer))
-    nothing
+        if j == 2 && tab[i][j] > 0
+            str *= "color:green;"
+        elseif j ∈ (3,4) && tab[i][j] > 0
+            str *= "color:red;"
+        elseif j == 6 && tab[i][j] > 0
+            str *= "color:blue;"
+        end
+
+        return str
+    end
+
+    format = function(value, i, j)
+        if i > 0 && j == 1
+            depth = tab[i][7]
+            value = repeat("&nbsp;", 2*depth) * value
+        end
+        return value
+    end
+
+    write_html_table(io::IO, ts; style = style, format = format, include_columns = 1:6, kwargs...)
 end
