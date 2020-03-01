@@ -5,7 +5,10 @@
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://ericphanson.github.io/TableTestSets.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ericphanson.github.io/TableTestSets.jl/dev)
 
-Testsets which can be printed to HTML tables.
+Testsets which can be printed to HTML tables. Provides
+* a type `TableTestSet <: AbstractTestSet` which is only slightly modified from `Test.DefaultTestSet` to not throw errors, by default, and to implement the `Tables.jl` interface
+* a function `html_table(io, ts::TableTestSet)` which uses `PrettyTables.jl` to print an HTML table formatted similarly to the usual test printing style
+* and functions `TableTestSets.print_test_results(io::IO, ts::TableTestSet)` and `TableTestSets.print_test_errors(io::IO, ts::TableTestSet)` to print results or errors to an IO object.
 
 ## Example
 
