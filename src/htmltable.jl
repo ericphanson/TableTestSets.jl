@@ -1,4 +1,4 @@
-function html_table(io::IO, ts::TableTestSet)
+function html_table(io::IO, ts::TableTestSet; standalone = true)
     tab = Tables.columntable(ts)
 
     hl_red = HTMLHighlighter(
@@ -64,6 +64,7 @@ function html_table(io::IO, ts::TableTestSet)
         highlighters = (hl_red, hl_green, hl_blue),
         cell_alignment = CA,
         tf = tf,
+        standalone = standalone,
     )
     write(io, take!(buffer))
     nothing
