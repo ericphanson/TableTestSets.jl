@@ -8,7 +8,6 @@ using Test: AbstractTestSet, Result, Pass, Fail, Error, Broken, TestSetException
 using Test: get_testset_depth, get_testset, myid, scrub_backtrace, record
 
 using Tables
-using PrettyTables
 
 include("tabletestset.jl")
 include("tables.jl")
