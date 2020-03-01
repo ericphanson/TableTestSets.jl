@@ -48,7 +48,8 @@ function print_test_errors(io::IO, ts::TableTestSet)
     for t in ts.results
         if (isa(t, Error) || isa(t, Fail)) && myid() == 1
             println(io, "Error in testset $(ts.description):")
-            Base.show(io,t)
+            Base.show(io, MIME"text/plain"(), t)
+            println(io)
             println(io)
         elseif isa(t, TableTestSet)
             print_test_errors(io, t)
