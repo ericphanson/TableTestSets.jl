@@ -12,9 +12,13 @@ Testsets which can be printed to HTML tables. Provides
 
 Relies on a few internal functions from the Test standard library, so this code could potentially break in future minor releases of Julia (tested on 1.3).
 
+This package was developed for [ConvexTests.jl](https://github.com/ericphanson/ConvexTests.jl); it might be able to find wider usage, but probably should get some better tests if that's the case (and hopefully reduced reliance on the internals of the `Test` stdlib).
+
 ## Example
 
 ```julia
+using Test, TableTestSets
+
 results = @testset TableTestSet "outer" begin
         @testset "inner 1" begin
             @test 1 // 1 == 1
