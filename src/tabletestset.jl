@@ -22,18 +22,16 @@ Test.record(ts::TableTestSet, t::Pass) = (ts.n_passed += 1; t)
 # For the other result types, immediately print the error message
 # but do not terminate. Print a backtrace.
 function Test.record(ts::TableTestSet, t::Union{Fail, Error})
-    if myid() == 1
-        printstyled(ts.description, ": ", color=:white)
-        # don't print for interrupted tests
-        if !(t isa Error) || t.test_type !== :test_interrupted
-            print(t)
-            # don't print the backtrace for Errors because it gets printed in the show
-            # method
-            if !isa(t, Error)
-                Base.show_backtrace(stdout, scrub_backtrace(backtrace()))
-            end
-            println()
+    printstyled(ts.description, ": ", color=:white)
+    # don't print for interrupted tests
+    if !(t isa Error) || t.test_type !== :test_interrupted
+        print(t)
+        # don't print the backtrace for Errors because it gets printed in the show
+        # method
+        if !isa(t, Error)
+            Base.show_backtrace(stdout, scrub_backtrace(backtrace()))
         end
+        println()
     end
     push!(ts.results, t)
     t, isa(t, Error) || backtrace()
@@ -46,7 +44,7 @@ Test.record(ts::TableTestSet, t::AbstractTestSet) = push!(ts.results, t)
 
 function print_test_errors(io::IO, ts::TableTestSet)
     for t in ts.results
-        if (isa(t, Error) || isa(t, Fail)) && myid() == 1
+        if (isa(t, Error) || isa(t, Fail))
             println(io, "Error in testset $(ts.description):")
             Base.show(io, MIME"text/plain"(), t)
             println(io)
